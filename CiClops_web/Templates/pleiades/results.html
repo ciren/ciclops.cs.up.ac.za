@@ -1,0 +1,36 @@
+{% include "head.html" %}
+{% include "nav.html" %}
+{% include "pleiades/side_menu.html" %}
+<div class="sd_left">
+      <div class="text_padding">
+        <h2>Current Directory: 
+        {% if not current_dir == "" %}
+            Results{{ path }}
+        {% else %}
+            Results
+        {% endif %}
+        </h2>
+	<ul>
+	    <li><a href='/pleiades/{{ user }}/results{{ back }}'>../</a>
+	</ul>
+	{% if dirs %}
+	    <ul>
+	    {% for dir in dirs %}
+		<li><a href='/pleiades/{{ user }}/results{{ path }}/{{ dir }}'>{{ dir }}</a></li>
+	    {% endfor %}
+	    </ul>
+	{% endif %}
+        
+        <h2>Result Files:</h2>
+	    <ul>
+	{% if files %}
+	    {% for file in files %}
+		<li>{{ file }}</li>
+	    {% endfor %}
+        {% else %}
+                <li>No results in current directory</li>
+	{% endif %}
+	    </ul>
+      </div>
+</div>
+{% include "footer.html" %}
