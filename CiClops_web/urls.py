@@ -11,6 +11,7 @@ urlpatterns = patterns('',
     # url(r'^$', 'CiClops_web.views.home', name='home'),
     # url(r'^CiClops_web/', include('CiClops_web.foo.urls')),
 
+    url(r'^$', 'CiClops_web.views.index'),
     url(r'^ciclops/$', 'CiClops_web.views.index'),
 
     url(r'^pleiades/$', 'pleiades.views.index'),
