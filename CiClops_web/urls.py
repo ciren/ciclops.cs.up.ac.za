@@ -16,9 +16,9 @@ urlpatterns = patterns('',
 
     url(r'^pleiades/$', 'pleiades.views.index'),
     url(r'^pleiades/login/$', 'pleiades.views.login'),
+    url(r'^pleiades/logout/$', 'pleiades.views.logout'),
     url(r'^pleiades/upload/$', 'pleiades.views.upload'),
-    url(r'^pleiades/(?P<name>\w+)/$', 'pleiades.views.user'),
-    url(r'^pleiades/(?P<name>\w+)/results(?P<path>[\w._\s\-/]*)/$', 'pleiades.views.results'),
+    url(r'^pleiades/results(?P<path>[\w._\s\-/]*)/$', 'pleiades.views.results'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
