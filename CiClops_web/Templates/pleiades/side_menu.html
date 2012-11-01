@@ -1,9 +1,13 @@
     <div class="sd_right">
       <div class="text_padding">
         <h2>Pleiades Menu</h2>
-        <a href="/pleiades/login">Log In</a><br />
-	<a href="/pleiades/upload">Upload New Job</a></br />
-        <a href="/pleiades/user/results">View Available Results</a></br />
+        {% if username = '' %}
+	        <a href="/pleiades/login">Log In</a><br />
+        {% else %}
+                <a href="/pleiades/logout">Log out {{ username }}</a><br />
+		<a href="/pleiades/upload">Upload New Job</a></br />
+        	<a href="/pleiades/results">View Available Results</a></br />
+        {% endif %}
         <br />
       </div>
     </div>
