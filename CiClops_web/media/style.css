@@ -18,6 +18,8 @@ h2 { margin: 0; padding: 0; font: normal 1.6em Arial, Sans-Serif; letter-spacing
 h1 a { color: #46574D; background: inherit; }
 h1 a, h2 a { text-decoration: none; }
 h1 a:hover, h2 a:hover { color: #BFE1ED; background: inherit; }
+h2 a.download { border-bottom: 2px #46574D dotted; }
+h2 a.download:hover { color: #35463C; border-bottom: 2px #35463C dotted; }
 h3 { font: 90% Arial, Sans-Serif; margin: 0 0 10px 0; padding: 0; color: #46574D; background: #FFF; }
 p {	margin: 0 0 0px 0; line-height: 1.5em; }
 form { margin: 0; }
