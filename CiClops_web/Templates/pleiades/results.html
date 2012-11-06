@@ -11,17 +11,17 @@
         {% endif %}
         </h2>
 	<ul>
-	    <li><a href='/pleiades/{{ username }}/results{{ back }}'>../</a>
+	    <li><a href='/pleiades/results{{ back }}'>../</a>
 	</ul>
 	{% if dirs %}
 	    <ul>
 	    {% for dir in dirs %}
-		<li><a href='/pleiades/{{ username }}/results{{ path }}/{{ dir }}'>{{ dir }}</a></li>
+		<li><a href='/pleiades/results{{ path }}/{{ dir }}'>{{ dir }}</a></li>
 	    {% endfor %}
 	    </ul>
 	{% endif %}
         
-        <h2>Result Files:</h2>
+        <h2>Result Files: {% if files %}<a class='download' href="/pleiades/download{{ path }}">Download All</a>{% endif %}</h2>
 	    <ul>
 	{% if files %}
 	    {% for file in files %}

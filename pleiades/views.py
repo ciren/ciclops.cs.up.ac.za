@@ -1,8 +1,9 @@
+from django.core.servers.basehttp import FileWrapper
 from django.template import Context, RequestContext, loader
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django import forms
-import os, glob, hashlib
+import os, tempfile, zipfile, glob, hashlib
 import MySQLdb as db
 
 class LoginForm(forms.Form):
@@ -15,9 +16,9 @@ def validateUser(request, user, password):
     valid = False
 
     try:
-        #insert database details here
-        con = db.connect('', '', 
-            '', '')
+        #insert pleiades database details here
+        con = db.connect('ip', 'user', 
+            'password', 'database')
             
         cur = con.cursor()
         cur.execute("select password from users where username = '" + user + "'")
@@ -115,17 +116,23 @@ def results(request, path):
     if not 'username' in request.session:
         return HttpResponseRedirect('/pleiades/login/')
     else:
+        user_dir = (path + '/')[1:(path + '/')[1:].find('/') + 1]
         user = request.session['username']
+
+        if (cmp(path, "") == 0) or not (cmp(user_dir, user) == 0):
+            return HttpResponseRedirect('/pleiades/results/' + user)
 
     template = loader.get_template('pleiades/results.html')
     css = settings.MEDIA_ROOT
     dirs = []
     files = []
-    current_path = settings.CICLOPS_RESULTS_DIR + user + path
+    current_path = settings.CICLOPS_RESULTS_DIR + path
+    current_path = os.path.join(current_path, '*')
 
-    print(path)
+    print("path: " + path)
+    print("current_path: " + current_path)
 
-    for current_file in glob.glob(os.path.join(current_path, '*')):
+    for current_file in glob.glob(current_path):
         if os.path.isdir(current_file):
             dirs.append(current_file[current_file.rfind('/') + 1:])
         else:
@@ -142,4 +149,43 @@ def results(request, path):
     })
 
     return HttpResponse(template.render(c))
+
+def download_results(request, path):
+    if not 'username' in request.session:
+        return HttpResponseRedirect('/pleiades/login/')
+
+    else:
+        user_dir = (path + '/')[1:(path + '/')[1:].find('/') + 1]
+        user = request.session['username']
+
+        if (cmp(path, "") == 0) or not (cmp(user_dir, user) == 0):
+            return HttpResponseRedirect('/pleiades/results/' + user)
+
+    """                                                                         
+    Create a ZIP file on disk and transmit it in chunks of 8KB,                 
+    without loading the whole file into memory. A similar approach can          
+    be used for large dynamic PDF files.                                        
+    """
+
+    files = []
+    current_path = settings.CICLOPS_RESULTS_DIR + path
+    current_path = os.path.join(current_path, '*')
+    
+    temp = tempfile.TemporaryFile()
+    archive = zipfile.ZipFile(temp, 'w', zipfile.ZIP_DEFLATED)
+    
+    for current_file in glob.glob(current_path):
+        if os.path.isfile(current_file):
+            archive.write(current_file, current_file[current_file.rfind('/') + 1:])
+
+    archive.close()
+
+    wrapper = FileWrapper(temp)
+    response = HttpResponse(wrapper, content_type='application/zip')
+
+    response['Content-Disposition'] = 'attachment; filename=' + path[path.rfind('/') + 1:] + '.zip'
+    response['Content-Length'] = temp.tell()
+    temp.seek(0)
+    
+    return response
 
