@@ -129,9 +129,6 @@ def results(request, path):
     current_path = settings.CICLOPS_RESULTS_DIR + path
     current_path = os.path.join(current_path, '*')
 
-    print("path: " + path)
-    print("current_path: " + current_path)
-
     for current_file in glob.glob(current_path):
         if os.path.isdir(current_file):
             dirs.append(current_file[current_file.rfind('/') + 1:])
