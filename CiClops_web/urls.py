@@ -18,6 +18,7 @@ urlpatterns = patterns('',
     url(r'^pleiades/login/$', 'pleiades.views.login'),
     url(r'^pleiades/logout/$', 'pleiades.views.logout'),
     url(r'^pleiades/upload/$', 'pleiades.views.upload'),
+    url(r'^pleiades/progress/$', 'pleiades.views.progress'),
     url(r'^pleiades/results(?P<path>[\w._\s\-/()]*)/$', 'pleiades.views.results'),
     url(r'^pleiades/download(?P<path>[\w._\s\-/()]*)/$', 'pleiades.views.download_results'),
 

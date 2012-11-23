@@ -134,6 +134,18 @@ input.submit { width: 28px; height: 20px; font-weight: bold; border: none; backg
 	border-left: 1px dashed #ccc;
 }	
 
+a .pie_chart {
+    width: 500px;
+    height: 200px;
+    border: dashed;
+    border-width: 2px;
+    border-color: #FFF;
+}
+
+a .pie_chart:hover{
+    border-color: #DDD;
+}
+
 /* For IE... */
 * html .sd_right {
     clear:both;

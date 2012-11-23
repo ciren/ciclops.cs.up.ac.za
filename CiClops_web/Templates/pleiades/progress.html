@@ -1,0 +1,43 @@
+{% include "head.html" %}
+{% include "nav.html" %}
+{% include "pleiades/side_menu.html" %}
+<div class="sd_left">
+      <div class="text_padding">
+        <h2>Pleiades Progress Report</h2>
+        {% if charts|length == 0 %}
+            You have no active jobs.
+        {% else %}
+            {% load gcharts %}	
+            {% gcharts %}
+                options = {
+                    title: "",
+                    colors: ['#ff9900', '#ffc266', '#ffebcc'],
+                    is3D: false,
+                    pieSliceTextStyle: {color: 'black'},
+                    titleTextStyle: {color: '#46574D', fontSize: '15'},
+                    pieSliceBorderColor: '#DDD',
+                    chartArea: {left:50, width:400, top:40, height:140}
+                };
+                pie_opt = _clone(options);
+                
+                {% for pie in charts %}
+                {% with container=forloop.counter|stringformat:"s"|add:"_pie_chart" %}
+                    pie_opt.title = "{{ pie.title }}";
+    
+                    {% options pie_opt %}
+    	            kind: "PieChart",
+                        options: pie_opt,
+                    {% endoptions %}
+    
+                    {% render container pie pie_opt %}
+                {% endwith %}
+                {% endfor %}
+            {% endgcharts %}
+
+            {% for pie in charts %}
+                <a href="{{ pie.title }}"><div class="pie_chart" id="{{ forloop.counter }}_pie_chart"></div></a>
+            {% endfor %}
+        {% endif %}
+      </div>
+</div>
+{% include "footer.html" %}
