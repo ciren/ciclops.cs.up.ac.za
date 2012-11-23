@@ -3,59 +3,18 @@ from django.template import Context, RequestContext, loader
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django import forms
-import os, tempfile, zipfile, glob, hashlib
-import MySQLdb as db
+from pygooglechart import PieChart3D, PieChart2D
+import os, tempfile, zipfile, glob
+import pleiades_db as pleiades
+import pleiades_progress as charts
 
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=100, required=True)
     password = forms.CharField(widget=forms.PasswordInput, required=True)
 
-def validateUser(request, user, password):
-    print 'connecting'
-    con = None
-    valid = False
-
-    try:
-        #insert pleiades database details here
-        con = db.connect('ip', 'user', 
-            'password', 'database')
-            
-        cur = con.cursor()
-        cur.execute("select password from users where username = '" + user + "'")
-
-        db_password = cur.fetchone()
-
-	if not db_password:
-            print "no such user"
-            valid = False
-
-        else:
-            db_password = "".join(db_password) 
-        
-            print "db: " + db_password
-            print "pass: " + password
-            print "hash: " + hashlib.sha256(password).hexdigest()
-            #verify SHA256 hash
-            if cmp(db_password, hashlib.sha256(password).hexdigest()) == 0:
-                print "true"
-                valid = True
-            else:
-                print "not true"
-                valid = False
-        
-    except db.Error, e:
-        print e
-
-    finally:
-        if con:
-            con.close()
-
-    if valid == True:
-        print "returning true"
-        return True
-
-    print "returning false"
-    return False
+class UploadForm(forms.Form):
+    input_file = forms.FileField(required=True)
+    jar_file = forms.CharField(widget=forms.PasswordInput, required=True)
 
 def index(request):
     if 'username' in request.session:
@@ -82,9 +41,9 @@ def login(request):
             user = form.cleaned_data['username']
             password = form.cleaned_data['password']
 
-            if validateUser(request, user, password) == True:
+            if pleiades.validateUser(request, user, password) == True:
                 request.session['username'] = user
-                request.session.set_expiry(300)
+                request.session.set_expiry(86400)
                 return HttpResponseRedirect('/pleiades/')
 
     form = LoginForm() # An unbound form    
@@ -112,6 +71,23 @@ def upload(request):
     })
     return HttpResponse(template.render(c))
 
+def progress(request):
+    if not 'username' in request.session:
+        return HttpResponseRedirect('/pleiades/login/')
+    else:
+        user = request.session['username']
+
+    user_charts = charts.getUserCharts(user)
+    
+    template = loader.get_template('pleiades/progress.html')
+
+    c = RequestContext(request, {
+        'current': 'Pleiades',
+        'username': request.session['username'],
+        'charts': user_charts,
+    })
+    return HttpResponse(template.render(c))
+
 def results(request, path):
     if not 'username' in request.session:
         return HttpResponseRedirect('/pleiades/login/')
@@ -136,6 +112,7 @@ def results(request, path):
             files.append(current_file[current_file.rfind('/') + 1:])
 
     c = RequestContext(request, {
+        'current': 'Pleiades',
         'dirs': dirs,
         'files': files,
         'path': path,
