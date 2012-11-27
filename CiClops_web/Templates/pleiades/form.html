@@ -1,0 +1,24 @@
+{% include "head.html" %}
+{% include "nav.html" %}
+{% include "pleiades/side_menu.html" %}
+    <div class="sd_left">
+      <div class="text_padding">
+        <h2>{{ header }}</h2>
+	<form name="this_form" action="{{ action }}" method="post" enctype="multipart/form-data">{% csrf_token %}
+	    {% for field in form %}
+		<div class="fieldWrapper">
+		    {{ field.label_tag }}:<br/>
+                    {{ field.errors }}
+		    {{ field }}<br/><br/>
+		</div>
+	    {% endfor %}
+            {% if submit = "Upload Job" %}
+	        <br /><p><input type="submit" value="{{ submit }}" onclick="this.disabled=1; this.value='working...'; document.getElementById('info').style.visibility='visible'; this.form.submit();"/></p>
+                <br /><p class="info" id="info">Your job is being uploaded. Do not navigate from or refresh this page!</p>
+            {% else %}
+                <br /><p><input type="submit" value="{{ submit }}"></p>
+            {% endif %}
+	</form>
+      </div>
+    </div>
+{% include "footer.html" %}

@@ -17,7 +17,11 @@ def getUserCharts(user):
 
         if inJobs == False:
             completed_path = settings.CICLOPS_RESULTS_DIR + "/" + user + "/" + sim['jobName'] + '/' + sim['outputPath'][:sim['outputPath'].find('/')] + '/'
-            completed = len([name for name in os.listdir(completed_path) if os.path.isfile(completed_path + name)])
+
+            if os.path.exists(completed_path):
+                completed = len([name for name in os.listdir(completed_path) if os.path.isfile(completed_path + name)])
+            else:
+                completed = 0
 
             print completed_path + " : " + str(completed)
 
