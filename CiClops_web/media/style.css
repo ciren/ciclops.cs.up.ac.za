@@ -21,13 +21,32 @@ h1 a:hover, h2 a:hover { color: #BFE1ED; background: inherit; }
 h2 a.download { border-bottom: 2px #46574D dotted; }
 h2 a.download:hover { color: #35463C; border-bottom: 2px #35463C dotted; }
 h3 { font: 90% Arial, Sans-Serif; margin: 0 0 10px 0; padding: 0; color: #46574D; background: #FFF; }
-p {	margin: 0 0 0px 0; line-height: 1.5em; }
+p { margin: 0 0 0px 0; line-height: 1.5em; }
+p.info { color: #F00; visibility: hidden; }
 form { margin: 0; }
 
 input.search { width: 122px; height: 15px; border: 1px dashed #46574D; background: #FFF url(input.jpg) no-repeat; padding: 3px; color: #616161; }
 input.submit { width: 28px; height: 20px; font-weight: bold; border: none; background: #FFF; padding: 3px; color: #616161; }
 
+ul.errorlist {
+    list-style-type: none;
+    color: #F00;
+    font-style: italic;
+    font-weight: normal;
+}
 
+.output {
+    color: #555;
+    background-color: #EEEEEE;
+    border-style: solid;
+    border-color: #DDD;
+    border-width: 1px;
+    padding: 5px;
+}
+
+.fieldWrapper {
+    font-weight: bold;
+}
 
 .content { 
     background: #FFF; 

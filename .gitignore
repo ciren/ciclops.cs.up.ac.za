@@ -1,3 +1,7 @@
 build
+*_uploads
 *.pyc
+*.jar
 *~
+pleiades.*
+hazelcast*
