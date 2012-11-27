@@ -1,0 +1,15 @@
+{% include "head.html" %}
+{% include "nav.html" %}
+{% include "pleiades/side_menu.html" %}
+    <div class="sd_left">
+      <div class="text_padding">
+        <h2>{{ header }}</h2>
+        <p><b>Output from Pleiades:</b></p>
+        <div class="output">{{ output|safe }}</div>
+      </div>
+      <br/>
+      <form action="/pleiades/progress/">
+          <p><input type="submit" value="View Progress"/></p>
+      </form>
+    </div>
+{% include "footer.html" %}

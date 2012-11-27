@@ -3,7 +3,6 @@ import pymongo as mongo
 import hashlib
 
 def validateUser(request, user, password):
-    print 'connecting'
     con = None
     valid = False
 
@@ -18,21 +17,15 @@ def validateUser(request, user, password):
         db_password = cur.fetchone()
 
 	if not db_password:
-            print "no such user"
             valid = False
 
         else:
             db_password = "".join(db_password) 
-        
-            print "db: " + db_password
-            print "pass: " + password
-            print "hash: " + hashlib.sha256(password).hexdigest()
+
             #verify SHA256 hash
             if cmp(db_password, hashlib.sha256(password).hexdigest()) == 0:
-                print "true"
                 valid = True
             else:
-                print "not true"
                 valid = False
         
     except db.Error, e:
@@ -43,14 +36,12 @@ def validateUser(request, user, password):
             con.close()
 
     if valid == True:
-        print "returning true"
         return True
 
-    print "returning false"
     return False
 
 def getUserResultObjects(user):
-    connection = mongo.Connection("ip", port)
+    connection = mongo.Connection("ip", 27017)
     mongoDB = mongo.database.Database(connection, "database")
 
     mongoDB.authenticate("user", "password")

@@ -3,8 +3,7 @@ from django.template import Context, RequestContext, loader
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django import forms
-from pygooglechart import PieChart3D, PieChart2D
-import os, tempfile, zipfile, glob
+import os, tempfile, zipfile, glob, subprocess, time
 import pleiades_db as pleiades
 import pleiades_progress as charts
 
@@ -13,12 +12,13 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput, required=True)
 
 class UploadForm(forms.Form):
+    job_name = forms.CharField(max_length=100, required=True)
     input_file = forms.FileField(required=True)
-    jar_file = forms.CharField(widget=forms.PasswordInput, required=True)
+    jar_file = forms.FileField(required=True)
+    pleiades_password = forms.CharField(widget=forms.PasswordInput, required=True)
 
 def index(request):
     if 'username' in request.session:
-        print "here"
         user = request.session['username']
     else:
         user = ''
@@ -32,26 +32,35 @@ def index(request):
 
 def login(request):
     if 'username' in request.session:
-        return HttpResponseRedirect('/pleiades/')
+        return HttpResponseRedirect(redirect)
 
-    if request.method == 'POST': # If the form has been submitted...
-        form = LoginForm(request.POST) # A form bound to the POST data
+    header = "Log In"
+
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
         
-        if form.is_valid(): # All validation rules pass
+        if form.is_valid():
             user = form.cleaned_data['username']
             password = form.cleaned_data['password']
 
             if pleiades.validateUser(request, user, password) == True:
                 request.session['username'] = user
                 request.session.set_expiry(86400)
-                return HttpResponseRedirect('/pleiades/')
+                return HttpResponseRedirect("/pleiades/")
+            else:
+                header = "Invalid Username or Password"
 
-    form = LoginForm() # An unbound form    
-    template = loader.get_template('pleiades/login.html')
+    else:
+        form = LoginForm()   
+
+    template = loader.get_template('pleiades/form.html')
 
     c = RequestContext(request, {
         'current': 'Pleiades',
         'form': form,
+        'submit': 'Login',
+        'header': header,
+        'action': '/pleiades/login/',
         'username': '',
     })
 
@@ -64,12 +73,75 @@ def logout(request):
     return HttpResponseRedirect('/pleiades/')
 
 def upload(request):
-    template = loader.get_template('pleiades/upload.html')
+    if not 'username' in request.session:
+        return HttpResponseRedirect('/pleiades/login/')
+    else:
+        user = request.session['username']
+
+    header = 'Upload Job'
+
+    if request.method == 'POST':
+        form = UploadForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            pleiades_pass = form.cleaned_data['pleiades_password']
+            jar_file = form.cleaned_data['jar_file']
+
+            if pleiades.validateUser(request, user, pleiades_pass) == True:
+                upload_path = user + '_uploads'
+
+                if not os.path.exists(upload_path):
+                    os.makedirs(upload_path)
+
+                input_path = upload_path + '/' + form.cleaned_data['job_name'] + '.xml'
+                jar_path = upload_path + '/' + form.cleaned_data['job_name'] + '.jar'
+
+                handle_uploaded_file(request.FILES['input_file'], input_path)
+                handle_uploaded_file(request.FILES['jar_file'], jar_path)
+
+                output = subprocess.check_output(['java', '-jar', './Pleiades-0.1.jar', '-u', user, '-i', input_path, '-j', jar_path], shell=False, universal_newlines=True);
+                output = output.replace(">", "<br/>")
+
+                clean_upload_dir(upload_path)
+                return upload_output(request, output)
+            else:
+                header = "Authentication Failure"
+
+    else:
+        form = UploadForm()    
+    
+    template = loader.get_template('pleiades/form.html')
+
     c = RequestContext(request, {
         'current': 'Pleiades',
-        'username': request.session['username']
+        'form': form,
+        'submit': 'Upload Job',
+        'header': header,
+        'action': '/pleiades/upload/',
     })
+
     return HttpResponse(template.render(c))
+
+def clean_upload_dir(path):
+    for f in os.listdir(path):
+        os.remove(path + '/' + f)
+
+def upload_output(request, output):
+    template = loader.get_template('pleiades/output.html')
+
+    c = RequestContext(request, {
+        'output': output,
+        'header': 'Upload Complete',
+    })
+
+    return HttpResponse(template.render(c))
+
+def handle_uploaded_file(f, name):
+    print "writing file"
+    with open(name, 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+    print "done"
 
 def progress(request):
     if not 'username' in request.session:
