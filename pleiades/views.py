@@ -15,7 +15,10 @@ class UploadForm(forms.Form):
     job_name = forms.CharField(max_length=100, required=True)
     input_file = forms.FileField(required=True)
     jar_file = forms.FileField(required=True)
-    pleiades_password = forms.CharField(widget=forms.PasswordInput, required=True)
+    #pleiades_password = forms.CharField(widget=forms.PasswordInput, required=True)
+
+class ViewAsForm(forms.Form):
+    view_as = forms.CharField(max_length=100, required=False)
 
 def index(request):
     if 'username' in request.session:
@@ -32,7 +35,7 @@ def index(request):
 
 def login(request):
     if 'username' in request.session:
-        return HttpResponseRedirect(redirect)
+        return HttpResponseRedirect('/pleiades/')
 
     header = "Log In"
 
@@ -46,6 +49,12 @@ def login(request):
             if pleiades.validateUser(request, user, password) == True:
                 request.session['username'] = user
                 request.session.set_expiry(86400)
+
+                if pleiades.is_admin(request, user) == 1:
+                    request.session['is_admin'] = True
+                else:
+                    request.session['is_admin'] = False
+
                 return HttpResponseRedirect("/pleiades/")
             else:
                 header = "Invalid Username or Password"
@@ -87,25 +96,25 @@ def upload(request):
             pleiades_pass = form.cleaned_data['pleiades_password']
             jar_file = form.cleaned_data['jar_file']
 
-            if pleiades.validateUser(request, user, pleiades_pass) == True:
-                upload_path = user + '_uploads'
+            #if pleiades.validateUser(request, user, pleiades_pass) == True:
+            upload_path = settings.USER_DIRS + '/' + user + '_uploads'
 
-                if not os.path.exists(upload_path):
-                    os.makedirs(upload_path)
+            if not os.path.exists(upload_path):
+                os.makedirs(upload_path)
 
-                input_path = upload_path + '/' + form.cleaned_data['job_name'] + '.xml'
-                jar_path = upload_path + '/' + form.cleaned_data['job_name'] + '.jar'
+            input_path = upload_path + '/' + form.cleaned_data['job_name'] + '.xml'
+            jar_path = upload_path + '/' + form.cleaned_data['job_name'] + '.jar'
 
-                handle_uploaded_file(request.FILES['input_file'], input_path)
-                handle_uploaded_file(request.FILES['jar_file'], jar_path)
+            handle_uploaded_file(request.FILES['input_file'], input_path)
+            handle_uploaded_file(request.FILES['jar_file'], jar_path)
 
-                output = subprocess.check_output(['java', '-jar', './Pleiades-0.1.jar', '-u', user, '-i', input_path, '-j', jar_path], shell=False, universal_newlines=True);
-                output = output.replace(">", "<br/>")
+            output = subprocess.Popen(['java', '-jar', './Pleiades-0.1.jar', '-u', user, '-i', input_path, '-j', jar_path], stdout=subprocess.PIPE).communicate()[0];
+            output = output.replace(">", "<br/>")
 
-                clean_upload_dir(upload_path)
-                return upload_output(request, output)
-            else:
-                header = "Authentication Failure"
+            clean_upload_dir(upload_path)
+            return upload_output(request, output)
+            #else:
+                #header = "Authentication Failure"
 
     else:
         form = UploadForm()    
@@ -130,6 +139,7 @@ def upload_output(request, output):
     template = loader.get_template('pleiades/output.html')
 
     c = RequestContext(request, {
+        'current': 'Pleiades',
         'output': output,
         'header': 'Upload Complete',
     })
@@ -149,7 +159,18 @@ def progress(request):
     else:
         user = request.session['username']
 
-    user_charts = charts.getUserCharts(user)
+    view_as = user
+
+    if request.method == 'POST':
+        form = ViewAsForm(request.POST)
+        
+        if form.is_valid():
+            view_as = form.cleaned_data['view_as']
+        
+    else:
+        form = ViewAsForm()
+
+    user_charts = charts.getUserCharts(view_as)
     
     template = loader.get_template('pleiades/progress.html')
 
@@ -157,6 +178,8 @@ def progress(request):
         'current': 'Pleiades',
         'username': request.session['username'],
         'charts': user_charts,
+        'form': form,
+        'is_admin': request.session['is_admin'],
     })
     return HttpResponse(template.render(c))
 

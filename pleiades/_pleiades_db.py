@@ -28,7 +28,7 @@ def validateUser(request, user, password):
             else:
                 valid = False
         
-    except db.Error, e:
+    except sql.Error, e:
         print e
 
     finally:
@@ -36,6 +36,36 @@ def validateUser(request, user, password):
             con.close()
 
     if valid == True:
+        return True
+
+    return False
+
+def is_admin(request, user):
+    con = None
+
+    try:
+        #insert pleiades database details here
+        con = sql.connect('ip', 'user', 
+            'password', 'database')
+            
+        cur = con.cursor()
+        cur.execute("select admin from users where username = '" + user + "'")
+
+        admin = cur.fetchone()
+
+        admin = admin[0]
+
+	if not admin:
+            admin = 0
+
+    except sql.Error, e:
+        print e
+
+    finally:
+        if con:
+            con.close()
+
+    if admin == 1:
         return True
 
     return False
