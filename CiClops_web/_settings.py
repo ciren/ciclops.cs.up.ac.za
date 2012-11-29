@@ -2,7 +2,8 @@
 import os
 
 PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
-CICLOPS_RESULTS_DIR = ''
+CICLOPS_RESULTS_DIR = '/home/ciclops/results'
+USER_DIRS = '/home/ciclops/uploads'
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG

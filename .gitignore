@@ -3,5 +3,7 @@ build
 *.pyc
 *.jar
 *~
+settings.py
+pleiades/pleiades_db.py
 pleiades.*
 hazelcast*
