@@ -4,6 +4,20 @@
 <div class="sd_left">
       <div class="text_padding">
         <h2>Pleiades Progress Report</h2>
+        {% if is_admin == 1%}
+            <div class="admin">
+                <form action="/pleiades/progress/" method="post">{% csrf_token %}
+                    <div class="fieldWrapper">
+                        {% for field in form %}
+                            {{ field.label_tag }}:
+                            {{ field.errors }}
+                            {{ field }}
+	                {% endfor %}
+                    <input type="submit" value="Go">
+                    </div>
+                </form>
+            </div><br/>
+        {% endif %}
         {% if charts|length == 0 %}
             You have no active jobs.
         {% else %}

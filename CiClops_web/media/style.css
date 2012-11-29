@@ -35,6 +35,14 @@ ul.errorlist {
     font-weight: normal;
 }
 
+.admin {
+    background-color: #EEEEEE;
+    border-style: solid;
+    border-color: #FCC;
+    border-width: 1px;
+    padding: 5px;
+}
+
 .output {
     color: #555;
     background-color: #EEEEEE;
