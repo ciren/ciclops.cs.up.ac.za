@@ -35,7 +35,7 @@ class UploadForm(forms.Form):
        return data
 
 class ViewAsForm(forms.Form):
-    view_as = forms.ModelChoiceField(queryset=pleiades.getAllUsers())
+    view_as = forms.CharField(max_length=100, required=False)
 
 def index(request):
     if 'username' in request.session:
