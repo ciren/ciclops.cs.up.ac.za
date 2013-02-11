@@ -3,9 +3,12 @@ from django.template import Context, RequestContext, loader
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django import forms
-import os, tempfile, zipfile, glob, subprocess, time
+import os, tempfile, zipfile, glob, subprocess, time, urllib
 import pleiades_db as pleiades
 import pleiades_progress as charts
+import pleiades_settings
+
+JAR_CHOICES = (('Default', 'Default Jar File (' + pleiades_settings.cilib_snapshot_version + ')'), ('Custom','Custom Jar File'))
 
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=100, required=True)
@@ -14,11 +17,25 @@ class LoginForm(forms.Form):
 class UploadForm(forms.Form):
     job_name = forms.CharField(max_length=100, required=True)
     input_file = forms.FileField(required=True)
-    jar_file = forms.FileField(required=True)
-    #pleiades_password = forms.CharField(widget=forms.PasswordInput, required=True)
+    jar_options = forms.ChoiceField(widget=forms.RadioSelect(attrs={'onclick':'if (this.value == "Default"){document.getElementById("id_custom_jar_file").disabled=1} else {document.getElementById("id_custom_jar_file").disabled=0}'}),
+                                    choices=JAR_CHOICES, required=True)
+    custom_jar_file = forms.FileField(required=False)
+
+    def clean_custom_jar_file(self):
+       data = self.cleaned_data['custom_jar_file']
+
+       if not 'jar_options' in self.cleaned_data:
+           return data
+
+       option = self.cleaned_data['jar_options']
+
+       if option == 'Custom' and data == None:
+          raise forms.ValidationError('Please specify a custom jar file or select one of the provided jar files.')
+
+       return data
 
 class ViewAsForm(forms.Form):
-    view_as = forms.CharField(max_length=100, required=False)
+    view_as = forms.ModelChoiceField(queryset=pleiades.getAllUsers())
 
 def index(request):
     if 'username' in request.session:
@@ -93,29 +110,28 @@ def upload(request):
         form = UploadForm(request.POST, request.FILES)
 
         if form.is_valid():
-            pleiades_pass = form.cleaned_data['pleiades_password']
-            jar_file = form.cleaned_data['jar_file']
+            jar_option = form.cleaned_data['jar_options']
 
-            #if pleiades.validateUser(request, user, pleiades_pass) == True:
             upload_path = settings.USER_DIRS + '/' + user + '_uploads'
-
+    
             if not os.path.exists(upload_path):
                 os.makedirs(upload_path)
-
+    
             input_path = upload_path + '/' + form.cleaned_data['job_name'] + '.xml'
             jar_path = upload_path + '/' + form.cleaned_data['job_name'] + '.jar'
-
+    
             handle_uploaded_file(request.FILES['input_file'], input_path)
-            handle_uploaded_file(request.FILES['jar_file'], jar_path)
 
+            if jar_option == 'Custom':
+                handle_uploaded_file(request.FILES['custom_jar_file'], jar_path)
+            elif jar_option == 'Default':
+                urllib.urlretrieve(pleiades_settings.cilib_snapshot_url, jar_path)
+    
             output = subprocess.Popen(['java', '-jar', './Pleiades-0.1.jar', '-u', user, '-i', input_path, '-j', jar_path], stdout=subprocess.PIPE).communicate()[0];
             output = output.replace(">", "<br/>")
-
+    
             clean_upload_dir(upload_path)
             return upload_output(request, output)
-            #else:
-                #header = "Authentication Failure"
-
     else:
         form = UploadForm()    
     
