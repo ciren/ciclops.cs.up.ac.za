@@ -8,7 +8,9 @@ import pleiades_db as pleiades
 import pleiades_progress as charts
 import pleiades_settings
 
-JAR_CHOICES = (('Default', 'Default Jar File (' + pleiades_settings.cilib_snapshot_version + ')'), ('Custom','Custom Jar File'))
+JAR_CHOICES = (('Custom','Custom Jar File'),
+               ('Master', 'Current Master Branch (' + pleiades_settings.cilib_snapshot_version + ')')
+              )
 
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=100, required=True)
@@ -17,7 +19,7 @@ class LoginForm(forms.Form):
 class UploadForm(forms.Form):
     job_name = forms.CharField(max_length=100, required=True)
     input_file = forms.FileField(required=True)
-    jar_options = forms.ChoiceField(widget=forms.RadioSelect(attrs={'onclick':'if (this.value == "Default"){document.getElementById("id_custom_jar_file").disabled=1} else {document.getElementById("id_custom_jar_file").disabled=0}'}),
+    jar_options = forms.ChoiceField(widget=forms.RadioSelect(attrs={'onclick':'if (this.value != "Custom"){document.getElementById("id_custom_jar_file").disabled=1} else {document.getElementById("id_custom_jar_file").disabled=0}'}),
                                     choices=JAR_CHOICES, required=True)
     custom_jar_file = forms.FileField(required=False)
 
@@ -124,10 +126,12 @@ def upload(request):
 
             if jar_option == 'Custom':
                 handle_uploaded_file(request.FILES['custom_jar_file'], jar_path)
-            elif jar_option == 'Default':
-                urllib.urlretrieve(pleiades_settings.cilib_snapshot_url, jar_path)
+                jar_type = 'custom'
+            elif jar_option == 'Master':
+                jar_path = pleiades_settings.cilib_master_path
+                jar_type = 'master'
     
-            output = subprocess.Popen(['java', '-jar', './Pleiades-0.1.jar', '-u', user, '-i', input_path, '-j', jar_path], stdout=subprocess.PIPE).communicate()[0];
+            output = subprocess.Popen(['java', '-jar', './Pleiades', '-u', user, '-i', input_path, '-j', jar_path, '-t', jar_type], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0];
             output = output.replace(">", "<br/>")
     
             clean_upload_dir(upload_path)
