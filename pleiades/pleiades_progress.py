@@ -24,7 +24,7 @@ def getUserJobs(user):
             print completed_path + " : " + str(completed)
 
             jobs.append({'name': sim['jobName'],
-		         'id': sim['id'],
+                         'id': sim['id'],
                          'incomplete': 1,
                          'completed': completed})
 

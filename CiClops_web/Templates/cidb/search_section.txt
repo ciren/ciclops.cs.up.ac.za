@@ -1,0 +1,38 @@
+{{ filters.management_form }}
+
+<center>
+  <table id="filterTable">
+
+      <tr>
+          <td align="center"><b>Key</b></td>
+          <td align="center"><b>Value</b></td>
+          <td align="center"></td>
+      </tr>
+
+      {% for form in filters.forms %}
+        <tr class="item">
+          {% for field in form %}
+            <td align="center">{{ field }}</td>
+          {% endfor %}
+
+          <td><a class="delete" href="#">Delete</a></td>
+        </tr>
+
+        {% if form.errors %}
+          <tr>
+          {% for field in form %}
+            <td>{{ field.errors }}</td>
+          {% endfor %}
+
+          <td>&nbsp;</td>
+          </tr>
+        {% endif %}
+      {% endfor %}
+
+      <tr>
+        <td><input type="submit" value=" Submit " /></td>
+        <td/>
+        <td><a id="add" href="#">Add filter</a></td>
+      </tr>
+  </table>
+</center>

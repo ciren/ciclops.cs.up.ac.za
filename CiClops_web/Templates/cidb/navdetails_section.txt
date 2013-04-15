@@ -1,0 +1,26 @@
+<center>
+    <table>
+        <tr>
+            <td>
+              Navigate to page 
+              <select name='navPage'>
+                {% for n in ids.paginator.page_range %}
+                  <option value="{{ n }}"{% if n == ids.number %} selected=""{% endif %}>{{ n }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td>&nbsp;</td>
+            <td><input type="submit" name="nav" value="Go" /></td>
+            <td>&nbsp;</td>
+            <td>
+              <select name='navCount'>
+                <option value="10"{% if pp == 10 %} selected=""{% endif %}>10</option>
+                <option value="20"{% if pp == 20 %} selected=""{% endif %}>20</option>
+                <option value="50"{% if pp == 50 %} selected=""{% endif %}>50</option>
+                <option value="100"{% if pp == 100 %} selected=""{% endif %}>100</option>
+              </select>
+              results per page
+            </td>
+        </tr>
+    </table>
+</center>
