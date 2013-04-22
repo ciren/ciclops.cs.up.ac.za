@@ -1,0 +1,26 @@
+{% load gcharts %}	
+{% gcharts %}
+options = {
+    title: "Progress Chart",
+    colors: ['#33cc99', '#339999', '#336633'],
+    is3D: false,
+    pieSliceTextStyle: {color: 'black'},
+    titleTextStyle: {color: '#46574D', fontSize: '12'},
+    pieSliceBorderColor: '#DDD',
+    chartArea: {left:50, width:400, top:40, height:120}
+};
+pie_opt = _clone(options);
+
+{% for pie in charts %}
+{% with container=id %}
+
+    {% options pie_opt %}
+        kind: "PieChart",
+        options: pie_opt,
+    {% endoptions %}
+
+    {% render container pie pie_opt %}
+{% endwith %}
+{% endfor %}
+{% endgcharts %}
+<div class="pie_chart" id="{{id}}"></div>

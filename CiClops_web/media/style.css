@@ -161,16 +161,55 @@ ul.errorlist {
 	border-left: 1px dashed #ccc;
 }	
 
-a .pie_chart {
+.job {
     width: 500px;
-    height: 200px;
+    height: 100%;
     border: dashed;
+    border-bottom-style: none;
     border-width: 2px;
-    border-color: #FFF;
+    border-color: #EEE;
 }
 
-a .pie_chart:hover{
+.job:hover {
     border-color: #DDD;
+}
+
+.job_controls {
+    color: #46574D;
+    width: 494px;
+    display: inline-block;
+    background-color: #DDD;
+    padding: 0px 3px;
+}
+
+.job_controls a {
+    text-decoration: none;
+}
+
+.job_title hr {
+    width: 95%;
+    border: 0;
+    color: #DDD;
+    background-color: #DDD;
+    height: 1px;
+}
+
+.job_title h1 {
+    background-color: #FFF;
+    padding: 5px 5px 0 5px;
+    color: #46574D;
+    font: normal 1.4em Arial, sans-serif;
+}
+
+.job_info h1 {
+    background-color: #FFF;
+    padding: 5px 5px 5px 10px;
+    color: #46574D;
+    font: normal 1.3em Arial, sans-serif;
+}
+
+.table_chart {
+    padding: 0 0 0 10px;
 }
 
 /* For IE... */
