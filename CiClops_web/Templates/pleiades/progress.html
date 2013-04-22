@@ -1,4 +1,4 @@
-{% include "head.html" %}
+{% include "pleiades/head.html" %}
 {% include "nav.html" %}
 {% include "pleiades/side_menu.html" %}
 <div class="sd_left">
@@ -18,40 +18,25 @@
                 </form>
             </div><br/>
         {% endif %}
-        {% if charts|length == 0 %}
-            You have no active jobs.
-        {% else %}
-            {% load gcharts %}	
-            {% gcharts %}
-                options = {
-                    title: "",
-                    colors: ['#ff9900', '#ffc266', '#ffebcc'],
-                    is3D: false,
-                    pieSliceTextStyle: {color: 'black'},
-                    titleTextStyle: {color: '#46574D', fontSize: '15'},
-                    pieSliceBorderColor: '#DDD',
-                    chartArea: {left:50, width:400, top:40, height:140}
-                };
-                pie_opt = _clone(options);
-                
-                {% for pie in charts %}
-                {% with container=forloop.counter|stringformat:"s"|add:"_pie_chart" %}
-                    pie_opt.title = "{{ pie.title }}";
-    
-                    {% options pie_opt %}
-    	            kind: "PieChart",
-                        options: pie_opt,
-                    {% endoptions %}
-    
-                    {% render container pie pie_opt %}
-                {% endwith %}
-                {% endfor %}
-            {% endgcharts %}
-
-            {% for pie in charts %}
-                <a href="{{ pie.title }}"><div class="pie_chart" id="{{ forloop.counter }}_pie_chart"></div></a>
-            {% endfor %}
-        {% endif %}
+        {% for job in jobs %}
+	    <div class="job" id="{{ forloop.counter }}">
+		<div class="job_title">
+			<table width="100%">
+			<row>
+				<td><h1>{{job.name}}</h1></td><td align="right"><h1>{{job.progress}}%</h1></td>
+			</row>
+			</table><hr/>
+		</div>
+               	<div class="pie_chart" id="{{ forloop.counter }}_pie_chart">
+		</div>
+		<div class="job_info"></div>
+		<div class="job_controls">
+			<a href="/pleiades/progress/chart/{{view_as}}/{{job.name}}/" class="200" id="chart">Progress Chart</a>&nbsp;&bull;
+			<a href="/pleiades/progress/samples/{{view_as}}/{{job.name}}/" class="280" id="samples">Simulations Breakdown</a>&nbsp;&bull;
+			<a href="/hide/" class="0" id="hide">hide</a>
+		</div>
+	    </div><br/>
+        {% endfor %}
       </div>
 </div>
 {% include "footer.html" %}

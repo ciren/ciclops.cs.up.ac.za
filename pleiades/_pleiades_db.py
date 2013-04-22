@@ -1,6 +1,6 @@
 import MySQLdb as sql
 import pymongo as mongo
-import hashlib
+import hashlib, re
 
 def validateUser(request, user, password):
     con = None
@@ -72,9 +72,76 @@ def is_admin(request, user):
 
 def getUserResultObjects(user):
     connection = mongo.Connection("ip", 27017)
-    mongoDB = mongo.database.Database(connection, "database")
+    mongoDB = mongo.database.Database(connection, "Pleiades")
 
     mongoDB.authenticate("user", "password")
 
-    return mongoDB.simulations.find({"owner": user})
+    return mongoDB.results.find({"owner": user})
+
+def getUserSimulations(user):
+    connection = mongo.Connection("ip", 27017)
+    mongoDB = mongo.database.Database(connection, "Pleiades")
+
+    mongoDB.authenticate("user", "password")
+
+    if mongoDB.jobs.find({"owner": user}).count() > 0:
+	user_entry = mongoDB.jobs.find_one({"owner": user})
+	return user_entry['simulations']
+    else:
+	return []
+
+def getRunningSimulationsCount(simulationID):
+    connection = mongo.Connection("ip", 27017)
+    mongoDB = mongo.database.Database(connection, "Pleiades")
+
+    mongoDB.authenticate("user", "password")
+
+    jobID = simulationID[:simulationID.rfind("_")]
+    regex = jobID + ".*"
+
+    running_samples = mongoDB.running.find({"task_id": re.compile(regex, re.IGNORECASE)})
+    running_sims = []
+    
+    for sample in running_samples:
+	sim_id = sample["task_id"][:sample["task_id"].rfind("_")]
+	if not sim_id in running_sims:
+	    running_sims.append(sim_id)
+
+    return len(running_sims)
+
+def getRunningSamplesCount(simulationID):
+    connection = mongo.Connection("ip", 27017)
+    mongoDB = mongo.database.Database(connection, "Pleiades")
+
+    mongoDB.authenticate("user", "password")
+
+    regex = simulationID + ".*"
+
+    print regex
+
+    running_samples = mongoDB.running.find({"task_id": re.compile(regex, re.IGNORECASE)}).count()
+
+    return running_samples
+
+def getAllUsers():
+    con = None
+
+    try:
+        #insert pleiades database details here
+        con = sql.connect('ip', 'user', 
+            'password', 'database')
+            
+        cur = con.cursor()
+        cur.execute("select * from users")
+
+        users = cur.fetchall()
+
+    except sql.Error, e:
+        print e
+
+    finally:
+        if con:
+            con.close()
+
+    return users
 
