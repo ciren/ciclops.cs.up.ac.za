@@ -179,7 +179,7 @@ def samples(request, view_as, jobName):
 	    name = sim['outputFileName']
 	    completed = len(sim['results'])
 	    running = pleiades.getRunningSamplesCount(sid)
-	    pending = sim['unfinishedTasks'] - (completed + running)
+	    pending = sim['samples'] - (completed + running)
 	    completed = str(round(float(completed) / (float(pending) + float(running) + float(completed)) * 100, 1)) + "%"
 
 	    rows.append({"c":[{"v":str(name)},{"v":pending},{"v":running},{"v":completed}]})
