@@ -36,9 +36,6 @@ class UploadForm(forms.Form):
 
        return data
 
-class ViewAsForm(forms.Form):
-    view_as = forms.CharField(max_length=100, required=False)
-
 def index(request):
     if 'username' in request.session:
         user = request.session['username']
@@ -173,35 +170,6 @@ def handle_uploaded_file(f, name):
             destination.write(chunk)
     print "done"
 
-def progress(request):
-    if not 'username' in request.session:
-        return HttpResponseRedirect('/pleiades/login/')
-    else:
-        user = request.session['username']
-
-    view_as = user
-
-    if request.method == 'POST':
-        form = ViewAsForm(request.POST)
-        
-        if form.is_valid():
-            view_as = form.cleaned_data['view_as']
-        
-    else:
-        form = ViewAsForm()
-
-    user_charts = charts.getUserCharts(view_as)
-    
-    template = loader.get_template('pleiades/progress.html')
-
-    c = RequestContext(request, {
-        'current': 'Pleiades',
-        'username': request.session['username'],
-        'charts': user_charts,
-        'form': form,
-        'is_admin': request.session['is_admin'],
-    })
-    return HttpResponse(template.render(c))
 
 def results(request, path):
     if not 'username' in request.session:

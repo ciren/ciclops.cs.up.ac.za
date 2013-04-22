@@ -1,0 +1,26 @@
+{% load gcharts %}	
+{% gcharts %}
+options = {
+    width: "480",
+    height: "275",
+    alternatingRowStyle: "true",
+    sortColumn: 2,
+    sortAscending: false
+};
+table_opt = _clone(options);
+table_opt.page = "disable";
+table_opt.pageSize = "10";
+
+{% for table in charts %}
+{% with container=id %}
+
+    {% options table_opt %}
+        kind: "Table",
+        options: table_opt,
+    {% endoptions %}
+
+    {% render container table table_opt %}
+{% endwith %}
+{% endfor %}
+{% endgcharts %}
+<div class="table_chart" id="{{id}}"></div>
