@@ -1,6 +1,7 @@
 import MySQLdb as sql
-import pymongo as mongo
 import hashlib, re
+
+from CiClops_web.mongo import connect, disconnect
 
 def validateUser(request, user, password):
     con = None
@@ -16,7 +17,7 @@ def validateUser(request, user, password):
 
         db_password = cur.fetchone()
 
-	if not db_password:
+        if not db_password:
             valid = False
 
         else:
@@ -55,7 +56,7 @@ def is_admin(request, user):
 
         admin = admin[0]
 
-	if not admin:
+        if not admin:
             admin = 0
 
     except sql.Error, e:
@@ -71,55 +72,53 @@ def is_admin(request, user):
     return False
 
 def getUserResultObjects(user):
-    connection = mongo.Connection("ip", 27017)
-    mongoDB = mongo.database.Database(connection, "Pleiades")
+    mongoDB, connection = connect("Pleiades")
+    result = mongoDB.results.find({"owner": user})
+    disconnect(connection)
 
-    mongoDB.authenticate("user", "password")
-
-    return mongoDB.results.find({"owner": user})
+    return result
 
 def getUserSimulations(user):
-    connection = mongo.Connection("ip", 27017)
-    mongoDB = mongo.database.Database(connection, "Pleiades")
-
-    mongoDB.authenticate("user", "password")
+    mongoDB, connection = connect("Pleiades")
 
     if mongoDB.jobs.find({"owner": user}).count() > 0:
-	user_entry = mongoDB.jobs.find_one({"owner": user})
-	return user_entry['simulations']
+        user_entry = mongoDB.jobs.find_one({"owner": user})
+        result = user_entry['simulations']
     else:
-	return []
+        result = []
+
+    disconnect(connection)
+
+    return result
 
 def getRunningSimulationsCount(simulationID):
-    connection = mongo.Connection("ip", 27017)
-    mongoDB = mongo.database.Database(connection, "Pleiades")
-
-    mongoDB.authenticate("user", "password")
+    mongoDB, connection = connect("Pleiades")
 
     jobID = simulationID[:simulationID.rfind("_")]
     regex = jobID + ".*"
 
     running_samples = mongoDB.running.find({"task_id": re.compile(regex, re.IGNORECASE)})
     running_sims = []
-    
+
     for sample in running_samples:
-	sim_id = sample["task_id"][:sample["task_id"].rfind("_")]
-	if not sim_id in running_sims:
-	    running_sims.append(sim_id)
+        sim_id = sample["task_id"][:sample["task_id"].rfind("_")]
+        if not sim_id in running_sims:
+            running_sims.append(sim_id)
+
+    disconnect(connection)
 
     return len(running_sims)
 
 def getRunningSamplesCount(simulationID):
-    connection = mongo.Connection("ip", 27017)
-    mongoDB = mongo.database.Database(connection, "Pleiades")
-
-    mongoDB.authenticate("user", "password")
+    mongoDB, connection = connect("Pleiades")
 
     regex = simulationID + ".*"
 
     print regex
 
     running_samples = mongoDB.running.find({"task_id": re.compile(regex, re.IGNORECASE)}).count()
+
+    disconnect(connection)
 
     return running_samples
 

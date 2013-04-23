@@ -1,0 +1,15 @@
+<center>
+    {% if ids.has_previous %}
+      <input type="submit" name="prev" value="<" />
+    {% else %}
+      <input type="submit" name="prev" value="<" disabled=""/>
+    {% endif %}
+
+    Page {{ ids.number }} of {{ ids.paginator.num_pages }}
+
+    {% if ids.has_next %}
+      <input type="submit" name="next" value=">" />
+    {% else %}
+      <input type="submit" name="next" value=">" disabled=""/>
+    {% endif %}
+</center>

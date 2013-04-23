@@ -111,7 +111,7 @@ ROOT_URLCONF = 'CiClops_web.urls'
 WSGI_APPLICATION = 'CiClops_web.wsgi.application'
 
 TEMPLATE_DIRS = (
-    os.path.join(PROJECT_DIR, 'Templates')
+    os.path.join(PROJECT_DIR, 'Templates'),
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -129,7 +129,8 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'pleiades',
-    'gcharts'
+    'gcharts',
+    'cidb'
 )
 
 # A sample logging configuration. The only tangible logging
