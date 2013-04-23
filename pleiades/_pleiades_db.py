@@ -89,6 +89,8 @@ def getUserSimulations(user):
 
     disconnect(connection)
 
+    return result
+
 def getRunningSimulationsCount(simulationID):
     mongoDB, connection = connect("Pleiades")
 
