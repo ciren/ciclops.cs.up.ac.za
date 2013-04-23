@@ -1,4 +1,3 @@
-from models import Result
 from parser import buildQuery
 from CiClops_web.mongo import connect, disconnect
 

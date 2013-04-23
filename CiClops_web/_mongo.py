@@ -1,4 +1,4 @@
-from pymongo import MongoClient, Connection
+from pymongo import Connection
 
 def connect(db_name):
     """
