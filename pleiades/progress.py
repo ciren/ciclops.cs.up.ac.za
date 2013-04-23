@@ -9,7 +9,11 @@ import pleiades_progress as charts
 import pleiades_settings
 
 class ViewAsForm(forms.Form):
-    view_as = forms.CharField(max_length=100, required=False)
+    users = pleiades.getAllUsers()
+    view_as = forms.ChoiceField(
+        choices=[(x[0], x[0]) for x in users
+            if cmp(x[0], "admin") != 0
+            and cmp(x[0], "distributor") != 0])
 
 def progress(request):
     if not 'username' in request.session:
