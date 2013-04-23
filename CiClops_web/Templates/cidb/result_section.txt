@@ -1,0 +1,5 @@
+<div id="resultDiv">
+    {% for id in ids %}
+      {{ id|safe }}
+    {% endfor %}
+</div>

@@ -24,6 +24,8 @@ urlpatterns = patterns('',
     url(r'^pleiades/results(?P<path>[\w._\s\-/()]*)/$', 'pleiades.views.results'),
     url(r'^pleiades/download(?P<path>[\w._\s\-/()]*)/$', 'pleiades.views.download_results'),
 
+    url(r'^cidb/', include('cidb.urls')),
+
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 

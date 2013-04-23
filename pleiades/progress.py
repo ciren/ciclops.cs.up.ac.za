@@ -21,10 +21,10 @@ def progress(request):
 
     if request.method == 'POST':
         form = ViewAsForm(request.POST)
-        
+
         if form.is_valid():
             view_as = form.cleaned_data['view_as']
-        
+
     else:
         form = ViewAsForm()
 
@@ -36,7 +36,7 @@ def progress(request):
     c = RequestContext(request, {
         'current': 'Pleiades',
         'username': request.session['username'],
-	'view_as': view_as,
+        'view_as': view_as,
         'jobs': user_jobs,
         'form': form,
         'is_admin': request.session['is_admin'],
@@ -50,48 +50,46 @@ def getUserJobs(view_as):
     jobs = []
 
     for sim in sims:
-	print "here"
         inJobs = False
         for job in jobs:
             if cmp(sim['jobName'], job['name']) == 0:
-		print "here too"
                 inJobs = True
                 continue
 
-	if inJobs == False:
-	    completed_path = settings.CICLOPS_RESULTS_DIR + "/" + view_as + "/" + sim['jobName'] + '/' + sim['outputPath'][:sim['outputPath'].rfind('/')] + '/'
+        if inJobs == False:
+            completed_path = settings.CICLOPS_RESULTS_DIR + "/" + view_as + "/" + sim['jobName'] + '/' + sim['outputPath'][:sim['outputPath'].rfind('/')] + '/'
 
-	    if os.path.exists(completed_path):
-		completed = len([name for name in os.listdir(completed_path) if os.path.isfile(completed_path + name)])
-	    else:
-		completed = 0
+            if os.path.exists(completed_path):
+                completed = len([name for name in os.listdir(completed_path) if os.path.isfile(completed_path + name)])
+            else:
+                completed = 0
 
-	    new_job = {'name': sim['jobName'],
-		    'id': sim['id'],
-		    'incomplete': 0,
-		    'completed': completed,
-		    'progress': 4}
+            new_job = {'name': sim['jobName'],
+                    'id': sim['id'],
+                    'incomplete': 0,
+                    'completed': completed,
+                    'progress': 4}
 
-	    for s in simulations:
-		if cmp(s['jobName'], new_job['name']) == 0:
-		    if  s['unfinishedTasks'] == s['samples']:
-			new_job['incomplete'] += 1
+            for s in simulations:
+                if cmp(s['jobName'], new_job['name']) == 0:
+                    if  s['unfinishedTasks'] == s['samples']:
+                        new_job['incomplete'] += 1
 
-	    new_job['incomplete'] += pleiades.getRunningSimulationsCount(new_job['id'])
+            new_job['incomplete'] += pleiades.getRunningSimulationsCount(new_job['id'])
 
-	    complete = int(new_job['completed'])
-	    total = int(new_job['incomplete']) + complete
-	    if total == 0:
-		progress = 666
-	    else:
-	    	progress = round(100 * float(complete) / float(total), 1)
+            complete = int(new_job['completed'])
+            total = int(new_job['incomplete']) + complete
+            if total == 0:
+                progress = 666
+            else:
+                    progress = round(100 * float(complete) / float(total), 1)
 
-	    new_job['progress'] = progress
+            new_job['progress'] = progress
 
-	    jobs.append(new_job)
+            jobs.append(new_job)
 
     return sorted(jobs, key=lambda x:x['name'].lower())
-    
+
 
 def chart(request, view_as, jobName):
     if not 'username' in request.session:
@@ -107,34 +105,34 @@ def chart(request, view_as, jobName):
 
     for sim in results:
         inJobs = False
-	if cmp(sim['jobName'], jobName) == 0:
-		for job in jobs:
-		    if cmp(sim['jobName'], job['name']) == 0:
-		        inJobs = True
-		        continue
+        if cmp(sim['jobName'], jobName) == 0:
+                for job in jobs:
+                    if cmp(sim['jobName'], job['name']) == 0:
+                        inJobs = True
+                        continue
 
-		if inJobs == False:
-		    completed_path = settings.CICLOPS_RESULTS_DIR + "/" + view_as + "/" + sim['jobName'] + '/' + sim['outputPath'][:sim['outputPath'].rfind('/')] + '/'
+                if inJobs == False:
+                    completed_path = settings.CICLOPS_RESULTS_DIR + "/" + view_as + "/" + sim['jobName'] + '/' + sim['outputPath'][:sim['outputPath'].rfind('/')] + '/'
 
-		    if os.path.exists(completed_path):
-		        completed = len([name for name in os.listdir(completed_path) if os.path.isfile(completed_path + name)])
-		    else:
-		        completed = 0
+                    if os.path.exists(completed_path):
+                        completed = len([name for name in os.listdir(completed_path) if os.path.isfile(completed_path + name)])
+                    else:
+                        completed = 0
 
-		    new_job = {'name': sim['jobName'],
-				 'id': sim['id'],
-		                 'pending': 0,
-		                 'running': 0,
-		                 'completed': completed}
+                    new_job = {'name': sim['jobName'],
+                                 'id': sim['id'],
+                                 'pending': 0,
+                                 'running': 0,
+                                 'completed': completed}
 
-		    for s in simulations:
-			if cmp(s['jobName'], new_job['name']) == 0:
-			    if  s['unfinishedTasks'] == s['samples']:
-				new_job['pending'] += 1
+                    for s in simulations:
+                        if cmp(s['jobName'], new_job['name']) == 0:
+                            if  s['unfinishedTasks'] == s['samples']:
+                                new_job['pending'] += 1
 
-		    new_job['running'] = pleiades.getRunningSimulationsCount(new_job['id'])
+                    new_job['running'] = pleiades.getRunningSimulationsCount(new_job['id'])
 
-		    jobs.append(new_job)
+                    jobs.append(new_job)
 
     if len(jobs) > 0:
         for job in jobs:
@@ -154,7 +152,7 @@ def chart(request, view_as, jobName):
 
     c = RequestContext(request, {
         'charts': charts,
-	'id': jobName
+        'id': jobName
     })
 
     return HttpResponse(template.render(c))
@@ -172,29 +170,29 @@ def samples(request, view_as, jobName):
     completed_path = ""
 
     for sim in results:
-	if cmp(sim['jobName'], jobName) == 0:
-	    completed_path = settings.CICLOPS_RESULTS_DIR + "/" + view_as + "/" + sim['jobName'] + '/' + sim['outputPath']
+        if cmp(sim['jobName'], jobName) == 0:
+            completed_path = settings.CICLOPS_RESULTS_DIR + "/" + view_as + "/" + sim['jobName'] + '/' + sim['outputPath']
 
-	    sid = sim['id']
-	    name = sim['outputFileName']
-	    completed = len(sim['results'])
-	    running = pleiades.getRunningSamplesCount(sid)
-	    pending = sim['samples'] - (completed + running)
-	    completed = str(round(float(completed) / (float(pending) + float(running) + float(completed)) * 100, 1)) + "%"
+            sid = sim['id']
+            name = sim['outputFileName']
+            completed = len(sim['results'])
+            running = pleiades.getRunningSamplesCount(sid)
+            pending = sim['samples'] - (completed + running)
+            completed = str(round(float(completed) / (float(pending) + float(running) + float(completed)) * 100, 1)) + "%"
 
-	    rows.append({"c":[{"v":str(name)},{"v":pending},{"v":running},{"v":completed}]})
+            rows.append({"c":[{"v":str(name)},{"v":pending},{"v":running},{"v":completed}]})
 
     completed_path = completed_path[:completed_path.rfind('/')] + '/'
     
     if os.path.exists(completed_path):
         for name in os.listdir(completed_path):
-	    rows.append({"c":[{"v":str(name)},{"v":0},{"v":0},{"v":"100%"}]})
+            rows.append({"c":[{"v":str(name)},{"v":0},{"v":0},{"v":"100%"}]})
 
     table = {"rows":rows,
               "cols":[{"type":"string","id":"name","label":"File Name"},
                       {"type":"string","id":"pending","label":"Pending Samples"},
-	              {"type":"string","id":"running","label":"Running Samples"},
-	              {"type":"string","id":"progress","label":"Completed Samples"}]
+                      {"type":"string","id":"running","label":"Running Samples"},
+                      {"type":"string","id":"progress","label":"Completed Samples"}]
             }
 
     charts.append(table)
@@ -203,7 +201,7 @@ def samples(request, view_as, jobName):
 
     c = RequestContext(request, {
         'charts': charts,
-	'id': jobName
+        'id': jobName
     })
 
     return HttpResponse(template.render(c))

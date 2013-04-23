@@ -1,0 +1,28 @@
+{% include "head.html" %}
+{% include "nav.html" %}
+
+<link rel="stylesheet" href="{{MEDIA_URL}}cidb/cidb_style.css" type="text/css" />
+<script type="text/javascript" src="{{MEDIA_URL}}jquery-1.9.1.js"></script>
+<script type="text/javascript" src="{{MEDIA_URL}}cidb/jstree.min.js"></script>
+<script type="text/javascript" src="{{MEDIA_URL}}cidb/cidb_helper.js"></script>
+
+<div class="sd_full">
+  <div class="text_padding">
+    <form action="/cidb/search/" method="post">{% csrf_token %}
+
+      <h2>Search</h2>
+
+      {% include "cidb/search_section.txt" %}
+
+      <h2>Results</h2>
+
+      {% include "cidb/navigation_section.txt" %}
+      <hr/>
+      {% include "cidb/result_section.txt" %}
+      <hr/>
+      {% include "cidb/navdetails_section.txt" %}
+
+    </form>
+  </div>
+</div>
+{% include "footer.html" %}
