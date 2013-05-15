@@ -95,7 +95,7 @@ def getRunningSimulationsCount(simulationID):
     mongoDB, connection = connect("Pleiades")
 
     jobID = simulationID[:simulationID.rfind("_")]
-    regex = jobID + ".*"
+    regex = jobID + "_.*"
 
     running_samples = mongoDB.running.find({"task_id": re.compile(regex, re.IGNORECASE)})
     running_sims = []
@@ -112,7 +112,7 @@ def getRunningSimulationsCount(simulationID):
 def getRunningSamplesCount(simulationID):
     mongoDB, connection = connect("Pleiades")
 
-    regex = simulationID + ".*"
+    regex = simulationID + "_.*"
 
     print regex
 
