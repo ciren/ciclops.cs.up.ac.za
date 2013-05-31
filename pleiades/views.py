@@ -3,7 +3,7 @@ from django.template import Context, RequestContext, loader
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django import forms
-import os, tempfile, zipfile, glob, subprocess, time, urllib
+import os, tempfile, zipfile, glob, subprocess, time, urllib, re
 import pleiades_db as pleiades
 import pleiades_progress as charts
 import pleiades_settings
@@ -15,6 +15,12 @@ JAR_CHOICES = (('Custom','Custom Jar File'),
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=100, required=True)
     password = forms.CharField(widget=forms.PasswordInput, required=True)
+
+class RegisterForm(forms.Form):
+    username = forms.CharField(max_length=100, required=True)
+    password = forms.CharField(widget=forms.PasswordInput, required=True)
+    repeat_password = forms.CharField(widget=forms.PasswordInput, required=True)
+    email = forms.CharField(max_length=100, required=True)
 
 class UploadForm(forms.Form):
     job_name = forms.CharField(max_length=100, required=True)
@@ -87,6 +93,61 @@ def login(request):
         'header': header,
         'action': '/pleiades/login/',
         'username': '',
+    })
+
+    return HttpResponse(template.render(c))
+
+def register(request):
+    if 'username' in request.session:
+        return HttpResponseRedirect('/pleiades/')
+
+    header = "Register"
+
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        
+        if form.is_valid():
+            user = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            repeat_password = form.cleaned_data['repeat_password']
+            email = form.cleaned_data['email']
+
+            if pleiades.userExists(user) == True:
+                header = "Username already exists"
+            elif not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+                header = "Invalid email address"
+            elif not cmp(password, repeat_password) == 0:
+                header = "Passwords don't match"
+            else:
+                if pleiades.register(user, password, email):
+                    return HttpResponseRedirect('/pleiades/new_user/' + user + '/')
+                else:
+                    header = "An error occurred D:"
+                
+
+    else:
+        form = RegisterForm()   
+
+    template = loader.get_template('pleiades/form.html')
+
+    c = RequestContext(request, {
+        'current': 'Pleiades',
+        'form': form,
+        'submit': 'Register',
+        'header': header,
+        'action': '/pleiades/register/',
+        'username': '',
+    })
+
+    return HttpResponse(template.render(c))
+
+def new_user(request, user):
+    template = loader.get_template('pleiades/new_user.html')
+
+    c = RequestContext(request, {
+        'current': 'Pleiades',
+        'username': '',
+        'new_user': user,
     })
 
     return HttpResponse(template.render(c))

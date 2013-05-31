@@ -41,6 +41,30 @@ def validateUser(request, user, password):
 
     return False
 
+def register(user, password, email):
+    con = None
+
+    try:
+        #insert pleiades database details here
+        con = sql.connect('ip', 'user', 
+            'password', 'database')
+            
+        cur = con.cursor()
+
+        db_password = hashlib.sha256(password).hexdigest()
+
+        cur.execute("insert into users values(\'" + user + "\',\'" + email + "\',\'" + db_password + "\',5,0)")
+        
+    except sql.Error, e:
+        print e
+        return False
+
+    finally:
+        if con:
+            con.close()
+
+    return True
+
 def is_admin(request, user):
     con = None
 
@@ -144,3 +168,13 @@ def getAllUsers():
 
     return users
 
+def userExists(user):
+    users = []
+    for u in getAllUsers():
+        print u[0].lower()
+        users.append(u[0].lower())
+
+    if user.lower() in users:
+        return True
+
+    return False
