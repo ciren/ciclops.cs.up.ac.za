@@ -16,6 +16,8 @@ urlpatterns = patterns('',
 
     url(r'^pleiades/$', 'pleiades.views.index'),
     url(r'^pleiades/login/$', 'pleiades.views.login'),
+    url(r'^pleiades/register/$', 'pleiades.views.register'),
+    url(r'^pleiades/new_user/(?P<user>.+)/$', 'pleiades.views.new_user'),
     url(r'^pleiades/logout/$', 'pleiades.views.logout'),
     url(r'^pleiades/upload/$', 'pleiades.views.upload'),
     url(r'^pleiades/progress/$', 'pleiades.progress.progress'),
