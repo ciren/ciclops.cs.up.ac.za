@@ -105,11 +105,7 @@ def getUserResultObjects(user):
 def getUserSimulations(user):
     mongoDB, connection = connect("Pleiades")
 
-    if mongoDB.jobs.find({"owner": user}).count() > 0:
-        user_entry = mongoDB.jobs.find_one({"owner": user})
-        result = user_entry['simulations']
-    else:
-        result = []
+    result = mongoDB.jobs.find({"owner": user})
 
     disconnect(connection)
 
