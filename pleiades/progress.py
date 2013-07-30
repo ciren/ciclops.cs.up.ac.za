@@ -116,7 +116,10 @@ def chart(request, view_as, jobName):
                         continue
 
                 if inJobs == False:
-                    completed_path = settings.CICLOPS_RESULTS_DIR + "/" + view_as + "/" + sim['jobName'] + '/' + sim['outputPath'][:sim['outputPath'].rfind('/')] + '/'
+                    completed_path = settings.CICLOPS_RESULTS_DIR + "/" + view_as + "/" + sim['jobName'] + '/'
+
+                    if not sim['outputPath'].rfind('/') == -1 :
+                        completed_path = completed_path + sim['outputPath'][:sim['outputPath'].rfind('/')] + '/'
 
                     if os.path.exists(completed_path):
                         completed = len([name for name in os.listdir(completed_path) if os.path.isfile(completed_path + name)])
