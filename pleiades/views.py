@@ -240,7 +240,7 @@ def results(request, path):
         user = request.session['username']
 
         if (cmp(path, "") == 0) or not (cmp(user_dir, user) == 0):
-            return HttpResponseRedirect('/pleiades/results/' + user)
+            return HttpResponseRedirect('/pleiades/results/' + user + '/')
 
     template = loader.get_template('pleiades/results.html')
     css = settings.MEDIA_ROOT
