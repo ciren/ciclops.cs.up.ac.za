@@ -1,0 +1,13 @@
+    <div class="sd_right">
+      <div class="text_padding">
+        <h2>Pleiades Menu</h2>
+        {% if username = '' %}
+	        <a href="/pleiades/login/">Log In</a><br />
+            <a href="/pleiades/register/">Register</a><br />
+        {% else %}
+            <a href="/pleiades/logout/">Log out {{ username }}</a><br /><br />
+            <a href="/frace/new/">Create New F-Race Job</a></br />
+        {% endif %}
+        <br />
+      </div>
+    </div>

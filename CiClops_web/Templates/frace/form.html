@@ -1,11 +1,11 @@
-{% include "pleiades/head.html" %}
+{% include "head.html" %}
 {% include "nav.html" %}
-{% include "pleiades/side_menu.html" %}
+{% include "frace/side_menu.html" %}
     <div class="sd_left">
       <div class="text_padding">
         <h2>{{ header }}</h2>
 	<form name="this_form" action="{{ action }}" method="post" enctype="multipart/form-data">{% csrf_token %}
-	    <div class="fieldWrapper">
+        <div class="fieldWrapper">
             <ul class="outer">
                 {{ form.as_ul }}
             </ul>
@@ -17,6 +17,6 @@
                 <br /><p><input type="submit" value="{{ submit }}"></p>
         {% endif %}
 	</form>
-      </div>
+    </div>
     </div>
 {% include "footer.html" %}

@@ -56,6 +56,19 @@ ul.errorlist {
     font-weight: bold;
 }
 
+.fieldWrapper ul.outer {
+	font-weight: bold;
+	list-style-type: none;
+	line-height: 4em;
+}
+
+.fieldWrapper ul {
+	font-weight: normal;
+	list-style-type: none;
+	line-height: 1em;
+	padding: 0 0 10px 0;
+}
+
 .content { 
     background: #FFF; 
 	margin: 0 auto;
