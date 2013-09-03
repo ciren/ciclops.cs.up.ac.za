@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.template import Context, RequestContext, loader
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django import forms
 from pleiades import pleiades_settings
 
@@ -63,10 +63,12 @@ def new_job(request):
             if not os.path.exists(upload_path):
                 os.makedirs(upload_path)
     
-            input_path = upload_path + '/' + form.cleaned_data['job_name'] + '.xml'
-            jar_path = upload_path + '/' + form.cleaned_data['job_name'] + '.jar'
+            algorithm_path = upload_path + '/' + form.cleaned_data['job_name'] + '_frace-alg.scala'
+            problems_path = upload_path + '/' + form.cleaned_data['job_name'] + '_frace-prob.scala'
+            jar_path = upload_path + '/' + form.cleaned_data['job_name'] + '_frace.jar'
     
-            handle_uploaded_file(request.FILES['input_file'], input_path)
+            handle_uploaded_file(request.FILES['algorithm_input_file'], algorithm_path)
+            handle_uploaded_file(request.FILES['problems_input_file'], problems_path)
 
             if jar_option == 'Custom':
                 handle_uploaded_file(request.FILES['custom_jar_file'], jar_path)
@@ -75,8 +77,8 @@ def new_job(request):
                 jar_path = pleiades_settings.cilib_master_path
                 jar_type = 'master'
     
-            output = subprocess.Popen(['java', '-jar', './Pleiades', '-u', user, '-i', input_path, '-j', jar_path, '-t', jar_type], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0];
-            output = output.replace(">", "<br/>")
+            #TODO:
+            #Generate and run ciclops jobs here
     
             clean_upload_dir(upload_path)
             return upload_output(request, output)
