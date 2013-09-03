@@ -26,8 +26,9 @@ class UploadForm(forms.Form):
     job_name = forms.CharField(max_length=100, required=True)
     input_file = forms.FileField(required=True)
     jar_options = forms.ChoiceField(widget=forms.RadioSelect(attrs={'onclick':'if (this.value != "Custom"){document.getElementById("id_custom_jar_file").disabled=1} else {document.getElementById("id_custom_jar_file").disabled=0}'}),
-                                    choices=JAR_CHOICES, required=True)
+                                    choices=JAR_CHOICES, required=True, initial='Master')
     custom_jar_file = forms.FileField(required=False)
+    custom_jar_file.widget.attrs['disabled'] = True
 
     def clean_custom_jar_file(self):
        data = self.cleaned_data['custom_jar_file']
@@ -205,6 +206,7 @@ def upload(request):
         'submit': 'Upload Job',
         'header': header,
         'action': '/pleiades/upload/',
+        'username': user,
     })
 
     return HttpResponse(template.render(c))

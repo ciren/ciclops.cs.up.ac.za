@@ -16,6 +16,7 @@ urlpatterns = patterns('',
 
     url(r'^pleiades/', include('pleiades.urls')),
     url(r'^cidb/', include('cidb.urls')),
+    url(r'^frace/', include('frace.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
