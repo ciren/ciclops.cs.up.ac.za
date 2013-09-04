@@ -45,10 +45,10 @@ problems = [
 
 measurement = '<addMeasurement class="measurement.single.Fitness"/>'
 
-ifrace_settings = IFraceSettings(is_iterative=True, interval=10, regenerator=regen_minmax_sobol(32))
+ifrace_settings = IFraceSettings(is_iterative=True, interval=10, regenerator='regen_minmax_sobol(32)')
 frace_settings = FRaceSettings(generator=initial_sobol(parameter_bounds, 32), min_probs=5, min_solutions=2, alpha=0.05, iterations=100)
 user_settings = UserSettings('user_name', 'job_name')
-location_settings = LocationSettings('/home/filipe/tmp', '/home/filipe/tmp')
+location_settings = LocationSettings('/home/bennie/test', '/home/bennie/test')
 simulation = SimulationSettings(algorithm, problems, measurement, samples=30)
 runner(user_settings, simulation, frace_settings, ifrace_settings, location_settings)
 

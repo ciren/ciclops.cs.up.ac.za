@@ -274,6 +274,9 @@ input.button {
 }
 
 .commentsbox { 
+    border-width: 1px;
+    border-color: #DDD;
+    border-style: solid;
 	padding: 8px 0 10px 10px; 
 	margin: 0 0 10px 0; 
 	background: #f4f4f4; 

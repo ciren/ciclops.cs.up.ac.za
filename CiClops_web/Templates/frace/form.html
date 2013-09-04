@@ -4,12 +4,22 @@
     <div class="sd_left">
       <div class="text_padding">
         <h2>{{ header }}</h2>
-	<form name="this_form" action="{{ action }}" method="post" enctype="multipart/form-data">{% csrf_token %}
+	<form name="this_form" action="{{ action }}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
         <div class="fieldWrapper">
             <ul class="outer">
                 {{ form.as_ul }}
             </ul>
         </div>
+        {% if algorithm %}
+            <h2>Please Review Before Submitting Your Job</h2>
+            <h4>The following algorithm was provided:</h4>
+            <div class="commentsbox"><pre>{{algorithm}}</pre></div>
+            <h4>The following problems were provided:</h4>
+            {% for p in problems %}
+                <div class="commentsbox"><pre>{{p}}</pre></div>
+            {% endfor %}
+        {%endif%}
         {% if submit = "Upload Job" %}
 	        <br /><p><input type="submit" value="{{ submit }}" onclick="this.disabled=1; this.value='working...'; document.getElementById('info').style.visibility='visible'; this.form.submit();"/></p>
                 <br /><p class="info" id="info">Your job is being uploaded. Do not navigate from or refresh this page!</p>

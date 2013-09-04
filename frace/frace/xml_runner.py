@@ -66,9 +66,9 @@ def generate_script(pars, iteration, simulation_settings, user_settings, locatio
     return script_filename
 
 
-def run_script(script):
+def run_script(script, jar_path, jar_type):
     '''
     Function to run a given script
     '''
 
-    subprocess.call(['cilib', script])
+    subprocess.call(['java', '-jar', './Pleiades', '-u', 'frace', '-i', script, '-j', jar_path, '-t', jar_type])

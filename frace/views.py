@@ -3,12 +3,15 @@ from django.template import Context, RequestContext, loader
 from django.http import HttpResponse, HttpResponseRedirect
 from django import forms
 from pleiades import pleiades_settings
+from frace import parameters, frace, utils
+import pleiades.views as pleiades
+import os, re
 
 JAR_CHOICES = (('Custom','Custom Jar File'),
                ('Master', 'Current Master Branch (' + pleiades_settings.cilib_snapshot_version + ')')
               )
 
-class UploadForm(forms.Form):
+class FraceForm(forms.Form):
     job_name = forms.CharField(max_length=100, required=True)
     algorithm_input_file = forms.FileField(required=True)
     problems_input_file = forms.FileField(required=True)
@@ -17,19 +20,33 @@ class UploadForm(forms.Form):
     custom_jar_file = forms.FileField(required=False)
     custom_jar_file.widget.attrs['disabled'] = True
     min_solutions = forms.ChoiceField(label='Minimum solutions',
-    	choices=[(5, 5), (10, 10), (15, 15)]
+        choices=[(5, 5), (10, 10), (15, 15)]
     )
     min_problems = forms.ChoiceField(label='Minimum problems',
-    	choices=[(5, 5), (10, 10), (15, 15)]
+        choices=[(5, 5), (10, 10), (15, 15)]
     )
-    sampling_method = forms.ChoiceField(
-    	choices=[('sobol', 'Sobol sequences'), ('uniform', 'Uniform per dimension')]
+    num_configurations = forms.ChoiceField(label='Configurations per race',
+        choices=[(50, 50), (100, 100), (150, 150)]
     )
-    num_samples = forms.ChoiceField(label='Configurations per race',
-    	choices=[(50, 50), (100, 100), (150, 150)]
+    iterations = forms.ChoiceField(
+        choices=[(50, 50), (100, 100), (150, 150)]
     )
-    iterated_frace = forms.BooleanField(label="Iterated F-Race", required=True, initial=True)
+    samples = forms.ChoiceField(label='Compare average results over n samples',
+        choices=[(50, 50), (100, 100), (150, 150)]
+    )
+    measurement = forms.CharField(label='Cilib measurement class path', max_length=200, required=True)
+    iterated_frace = forms.BooleanField(label="Periodically regenerate parameter configurations (Iterated F-Race)", required=False, initial=True)
+    interval = forms.ChoiceField(
+        choices=[(5, 5), (10, 10), (15, 15)]
+    )
 
+class FraceBoundsForm(forms.Form):
+    initial_sampling_method = forms.ChoiceField(
+        choices=[('sobol', 'Sobol sequence'),
+            ('uniform', 'Uniform per dimension'),
+            #('custom', 'Custom configurations')
+        ]
+    )
 
 def index(request):
     if 'username' in request.session:
@@ -50,50 +67,144 @@ def new_job(request):
     else:
         user = request.session['username']
 
-    header = 'Upload Job'
+    header = 'New F-Race Job'
 
     if request.method == 'POST':
-        form = UploadForm(request.POST, request.FILES)
+        form = FraceForm(request.POST, request.FILES)
 
         if form.is_valid():
             jar_option = form.cleaned_data['jar_options']
+            job_name = form.cleaned_data['job_name']
 
-            upload_path = settings.USER_DIRS + '/' + user + '_uploads'
+            upload_path = os.path.join(settings.USER_DIRS, user + '_uploads')
+            base_path = os.path.join(settings.USER_DIRS, user, job_name)
+            results_path = os.path.join(settings.USER_DIRS, user, job_name, 'results')
     
             if not os.path.exists(upload_path):
                 os.makedirs(upload_path)
+
+            if not os.path.exists(base_path):
+                os.makedirs(base_path)
+
+            if not os.path.exists(results_path):
+                os.makedirs(results_path)
     
-            algorithm_path = upload_path + '/' + form.cleaned_data['job_name'] + '_frace-alg.scala'
-            problems_path = upload_path + '/' + form.cleaned_data['job_name'] + '_frace-prob.scala'
-            jar_path = upload_path + '/' + form.cleaned_data['job_name'] + '_frace.jar'
+            algorithm_path = os.path.join(upload_path, job_name + '_frace-alg.scala')
+            problems_path = os.path.join(upload_path, job_name + '_frace-prob.scala')
+            jar_path = os.path.join(upload_path, job_name + '_frace.jar')
     
-            handle_uploaded_file(request.FILES['algorithm_input_file'], algorithm_path)
-            handle_uploaded_file(request.FILES['problems_input_file'], problems_path)
+            pleiades.handle_uploaded_file(request.FILES['algorithm_input_file'], algorithm_path)
+            pleiades.handle_uploaded_file(request.FILES['problems_input_file'], problems_path)
 
             if jar_option == 'Custom':
-                handle_uploaded_file(request.FILES['custom_jar_file'], jar_path)
-                jar_type = 'custom'
+                pleiades.handle_uploaded_file(request.FILES['custom_jar_file'], jar_path)
+                request.session['jar_type'] = 'custom'
+                request.session['jar_path'] = jar_path
             elif jar_option == 'Master':
-                jar_path = pleiades_settings.cilib_master_path
-                jar_type = 'master'
-    
-            #TODO:
-            #Generate and run ciclops jobs here
-    
-            clean_upload_dir(upload_path)
-            return upload_output(request, output)
+                request.session['jar_path'] = pleiades_settings.cilib_master_path
+                request.session['jar_type'] = 'master'
+
+            is_iterative = form.cleaned_data['iterated_frace']
+            request.session['min_solutions'] = form.cleaned_data['min_solutions']
+            request.session['min_problems'] = form.cleaned_data['min_problems']
+            request.session['configurations'] = form.cleaned_data['num_configurations']
+            regen = 'regen_minmax_sobol(' + str(request.session['configurations']) + ')'
+            samples = form.cleaned_data['samples']
+            interval = form.cleaned_data['interval']
+            measurement = form.cleaned_data['measurement']
+            request.session['iterations'] = form.cleaned_data['iterations']
+
+            algorithm = utils.get_algorithm_string(algorithm_path)
+            problems = utils.get_problem_strings(problems_path)
+
+            #generator = parameters.initial_sobol(parameter_bounds, configurations)
+
+            request.session['user_settings'] = frace.UserSettings(user, job_name)
+            request.session['location_settings'] = frace.LocationSettings(base_path, results_path)
+            request.session['ifrace_settings'] = frace.IFraceSettings(is_iterative, interval, regen)
+            request.session['simulation'] = frace.SimulationSettings(algorithm, problems, measurement, samples)
+
+            request.method = ""
+
+            return upload(request)
     else:
-        form = UploadForm()    
+        form = FraceForm()
     
     template = loader.get_template('frace/form.html')
 
     c = RequestContext(request, {
         'current': 'F-Race',
         'form': form,
-        'submit': 'Upload Job',
+        'submit': 'Next',
+        'back': 'Back',
         'header': header,
-        'action': '/pleiades/upload/',
+        'action': '/frace/new/',
         'username': user,
     })
 
     return HttpResponse(template.render(c))
+
+def upload(request):
+    if not 'username' in request.session:
+        return HttpResponseRedirect('/pleiades/login/')
+    else:
+        user = request.session['username']
+
+    header = 'Specify Initial Parameter Bounds'
+
+    simulation = request.session['simulation']
+
+    if request.method == 'POST':
+        form = FraceBoundsForm(request.POST, request.FILES)
+        num_params = add_parameters(form, simulation)
+
+        if form.is_valid():
+            gen = form.cleaned_data['initial_sampling_method']
+
+            bounds = []
+
+            for i in range(0, num_params):
+                bounds.append(form.cleaned_data['parameter_' + str(i)])
+
+            print bounds
+
+            bounds_regex = r'\([0-9]+(?:\.[0-9]+)?(?:,)[0-9]+(?:\.[0-9]+)?\)'
+            if all(re.match(bounds_regex, b) for b in bounds):
+                bounds = [[float(j) for j in i[1:-1].split(',')] for i in bounds]
+                print bounds
+                if gen == 'sobol':
+                    generator = parameters.initial_sobol(bounds, request.session['configurations'])
+                elif gen == 'uniform':
+                    pass
+
+                print "success"
+                frace_settings = frace.FRaceSettings(generator, request.session['min_problems'], request.session['min_solutions'], 0.05, request.session['iterations'])
+                runner(request)
+            else:
+                header = "Invalid Bounds"
+    else:
+        form = FraceBoundsForm()
+        add_parameters(form, simulation)
+    
+    template = loader.get_template('frace/form.html')
+
+    c = RequestContext(request, {
+        'current': 'F-Race',
+        'algorithm':simulation.algorithm.replace('>', '>\n'),
+        'problems':(p.replace('>', '>\n') for p in simulation.problems),
+        'form': form,
+        'submit': 'Upload Job',
+        'header': header,
+        'action': '/frace/upload/',
+        'username': user,
+    })
+
+    return HttpResponse(template.render(c))
+
+def add_parameters(form, simulation):
+    parameters = re.findall(r'TuningControlParameter', simulation.algorithm)
+
+    for i in range(0, len(parameters)):
+            form.fields['parameter_' + str(i)] = forms.CharField(max_length=100, required=True)
+
+    return len(parameters)

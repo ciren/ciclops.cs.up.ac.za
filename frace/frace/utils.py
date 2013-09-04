@@ -56,3 +56,17 @@ def def_name(s):
 
 def id_name(s):
     return re.search(r'id="(.*)" class', s).group(1).strip()
+
+
+def get_algorithm_string(algorithm_path):
+    with open(algorithm_path) as f:
+        s = f.read().replace('\n', '')
+
+    print "here"
+    return re.findall(r'<algorithm\s.*</algorithm>', s)[0]
+
+def get_problem_strings(problems_path):
+    with open(problems_path) as f:
+        s = f.read().replace('\n', '')
+
+    return [i + '</problem>' for i in re.findall(r'<problem\s.*</problem>', s)[0].split('</problem>')[:-1]]
