@@ -151,12 +151,11 @@ def iteration(pars, user_settings, simulation_settings, frace_settings, iteratio
     return pars
 
 
-def runner(request):
+def runner(request, frace_settings):
     location_settings = request.session['location_settings']
     user_settings = request.session['user_settings']
-    frace_settings = request.session['frace_settings']
     ifrace_settings = request.session['ifrace_settings']
-    simulation_settings = request.session['simulation_settings']
+    simulation_settings = request.session['simulation']
     jar_path = request.session['jar_path']
     jar_type = request.session['jar_type']
 

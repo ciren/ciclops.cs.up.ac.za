@@ -76,18 +76,15 @@ def new_job(request):
             jar_option = form.cleaned_data['jar_options']
             job_name = form.cleaned_data['job_name']
 
-            upload_path = os.path.join(settings.USER_DIRS, user + '_uploads')
-            base_path = os.path.join(settings.USER_DIRS, user, job_name)
-            results_path = os.path.join(settings.USER_DIRS, user, job_name, 'results')
+            upload_path = os.path.join(settings.USER_DIRS, 'frace', user + '_uploads')
+            base_path = os.path.join(settings.USER_DIRS, 'frace', user, job_name)
+            results_path = os.path.join(settings.CICLOPS_RESULTS_DIR, 'frace', user, job_name)
     
             if not os.path.exists(upload_path):
                 os.makedirs(upload_path)
 
             if not os.path.exists(base_path):
                 os.makedirs(base_path)
-
-            if not os.path.exists(results_path):
-                os.makedirs(results_path)
     
             algorithm_path = os.path.join(upload_path, job_name + '_frace-alg.scala')
             problems_path = os.path.join(upload_path, job_name + '_frace-prob.scala')
@@ -104,15 +101,15 @@ def new_job(request):
                 request.session['jar_path'] = pleiades_settings.cilib_master_path
                 request.session['jar_type'] = 'master'
 
-            is_iterative = form.cleaned_data['iterated_frace']
-            request.session['min_solutions'] = form.cleaned_data['min_solutions']
-            request.session['min_problems'] = form.cleaned_data['min_problems']
-            request.session['configurations'] = form.cleaned_data['num_configurations']
+            is_iterative = bool(form.cleaned_data['iterated_frace'])
+            request.session['min_solutions'] = int(form.cleaned_data['min_solutions'])
+            request.session['min_problems'] = int(form.cleaned_data['min_problems'])
+            request.session['configurations'] = int(form.cleaned_data['num_configurations'])
             regen = 'regen_minmax_sobol(' + str(request.session['configurations']) + ')'
-            samples = form.cleaned_data['samples']
-            interval = form.cleaned_data['interval']
+            samples = int(form.cleaned_data['samples'])
+            interval = int(form.cleaned_data['interval'])
             measurement = form.cleaned_data['measurement']
-            request.session['iterations'] = form.cleaned_data['iterations']
+            request.session['iterations'] = int(form.cleaned_data['iterations'])
 
             algorithm = utils.get_algorithm_string(algorithm_path)
             problems = utils.get_problem_strings(problems_path)
@@ -179,7 +176,7 @@ def upload(request):
 
                 print "success"
                 frace_settings = frace.FRaceSettings(generator, request.session['min_problems'], request.session['min_solutions'], 0.05, request.session['iterations'])
-                runner(request)
+                frace.runner(request, frace_settings)
             else:
                 header = "Invalid Bounds"
     else:
