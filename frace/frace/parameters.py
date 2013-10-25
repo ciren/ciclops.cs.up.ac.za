@@ -60,9 +60,9 @@ def initial_sobol(bounds, count):
     bounds: list of tuples (or lists) containing lower and upper bounds [(l1,u1), ..., (ln,un)]
     count: number of configurations to generate
     '''
-
+    print bounds, count
     return lambda: [parameter_name([i[j] * (bounds[j][1] - bounds[j][0]) + bounds[j][0] for j in range(len(bounds))]) 
-        for i in i4_sobol_generate(len(bounds), count, 2).T]
+        for i in i4_sobol_generate(len(bounds), int(count), 2).T]
 
 
 # Configuration regenerators for iterated F-Race

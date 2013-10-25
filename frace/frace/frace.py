@@ -18,7 +18,7 @@ from parameters import *
 
 # Helper classes to hold settings: maybe only need one class?
 class IFraceSettings(object):
-    def __init__(self, is_iterative=False, interval=10, regenerator=regen_minmax_sobol(100)):
+    def __init__(self, is_iterative=False, interval=10, regenerator='regen_minmax_sobol(100)'):
         self.is_iterative = is_iterative
         self.interval = interval
         self.regenerator = regenerator
@@ -115,8 +115,8 @@ def generate_results(user_settings, location_settings):
     return results, pars
 
 
-def iteration(pars, user_settings, simulation_settings, frace_settings, iteration, location_settings):
-    run_script(generate_script(pars, iteration, simulation_settings, user_settings, location_settings))
+def iteration(pars, user_settings, simulation_settings, frace_settings, iteration, location_settings, jar_path, jar_type):
+    run_script(generate_script(pars, iteration, simulation_settings, user_settings, location_settings), jar_path, jar_type)
 
     while not all(os.path.exists(p) for p in parameter_filenames(user_settings, iteration, pars, location_settings)):
         # wait for results
@@ -151,7 +151,13 @@ def iteration(pars, user_settings, simulation_settings, frace_settings, iteratio
     return pars
 
 
-def runner(user_settings, simulation_settings, frace_settings, ifrace_settings, location_settings):
+def runner(request, frace_settings):
+    location_settings = request.session['location_settings']
+    user_settings = request.session['user_settings']
+    ifrace_settings = request.session['ifrace_settings']
+    simulation_settings = request.session['simulation']
+    jar_path = request.session['jar_path']
+    jar_type = request.session['jar_type']
 
     path = os.path.join(location_settings.base_location, user_settings.user, user_settings.job)
 
@@ -177,7 +183,7 @@ def runner(user_settings, simulation_settings, frace_settings, ifrace_settings, 
         # regenerate parameters if needed
         if ifrace_settings.is_iterative and i % ifrace_settings.interval == 0:
             print 'Regenerating parameters...'
-            pars = ifrace_settings.regenerator(pars)
+            pars = eval(ifrace_settings.regenerator)(pars)
             # delete all result files for this frace run since they're not used anymore
             shutil.rmtree(os.path.join(location_settings.results_location, user_settings.user, user_settings.job))
             os.makedirs(os.path.join(location_settings.results_location, user_settings.user, user_settings.job))
@@ -187,7 +193,7 @@ def runner(user_settings, simulation_settings, frace_settings, ifrace_settings, 
 
         # frace iteration
         print '-- Iteration'
-        pars = iteration(pars, user_settings, simulation_settings, frace_settings, i, location_settings)
+        pars = iteration(pars, user_settings, simulation_settings, frace_settings, i, location_settings, jar_path, jar_type)
 
         # delete unused results
         print '-- Deleting removed parameters'
